@@ -9,6 +9,7 @@ import {
   Box,
   IconButton,
   Divider,
+  Chip,
 } from "@mui/material";
 import { TodoState } from "../redux/api/types";
 import { globalColors } from "../redux/theme/globalColors";
@@ -20,9 +21,13 @@ import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
 import InputTodo from "./InputTodo";
 import AddIcon from "@mui/icons-material/Add";
 import ViewTodo from "./ViewTodo";
-import { fetchDeleteTasks, FetchThunkParams } from "../redux/api/thunks";
-import { DEL_TASK_API_URL } from "../constants/apiUrl";
-import { deleteTask } from "../redux/api/axiosApis";
+import {
+  fetchDeleteTasks,
+  fetchModifyTask,
+  FetchThunkParams,
+} from "../redux/api/thunks";
+import { DEL_TASK_API_URL, PUT_MODIFY_TASK_API_URL } from "../constants/apiUrl";
+import { deleteTask, putTask } from "../redux/api/axiosApis";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../redux/store";
 
@@ -66,6 +71,27 @@ const ItemCard = ({ todo }: ItemCardProps) => {
     };
     dispatch(fetchDeleteTasks(fetchParam));
   };
+
+  const handleCompletedChange = () => {
+    console.log("handleCompletedChange");
+    modifyTodo(JSON.stringify({ isCompleted: !todo?.iscompleted }));
+  };
+
+  const handleImpotantChange = () => {
+    console.log("handleImpotantChange");
+    modifyTodo(JSON.stringify({ isImportant: !todo?.isimportant }));
+  };
+
+  function modifyTodo(data: string) {
+    const fetchParam: FetchThunkParams = {
+      fetchParams: {
+        url: `${PUT_MODIFY_TASK_API_URL}?taskID=${todo?._id}`,
+        data,
+      },
+      axiosFunc: putTask,
+    };
+    dispatch(fetchModifyTask(fetchParam));
+  }
 
   return (
     <div>
@@ -116,14 +142,34 @@ const ItemCard = ({ todo }: ItemCardProps) => {
           <CardActions
             sx={{
               display: "flex",
-              justifyContent:
-                todo.isimportant || todo.iscompleted ? "space-between" : "end",
+              justifyContent: "space-between",
               marginLeft: "5px",
               marginRight: "5px",
               marginBottom: "5px",
             }}
           >
-            {todo.iscompleted ? (
+            <Box>
+              <IconButton onClick={handleCompletedChange}>
+                <Chip
+                  icon={<CheckCircleOutlineRoundedIcon />}
+                  label="isCompleted"
+                  color={todo.iscompleted ? "error" : undefined}
+                  variant={todo.iscompleted ? "filled" : "outlined"}
+                  size="small"
+                />
+              </IconButton>
+              <IconButton onClick={handleImpotantChange}>
+                <Chip
+                  icon={<ErrorOutlineRoundedIcon />}
+                  label="isImportant"
+                  color={todo.isimportant ? "warning" : undefined}
+                  variant={todo.isimportant ? "filled" : "outlined"}
+                  size="small"
+                  sx={{ marginLeft: "5px" }}
+                />
+              </IconButton>
+            </Box>
+            {/* {todo.iscompleted ? (
               <Box display={"flex"} color={globalColors.blue}>
                 <CheckCircleOutlineRoundedIcon />
                 completed
@@ -138,7 +184,7 @@ const ItemCard = ({ todo }: ItemCardProps) => {
               </Box>
             ) : (
               ""
-            )}
+            )} */}
             <Box>
               <IconButton
                 color="primary"

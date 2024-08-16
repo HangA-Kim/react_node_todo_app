@@ -16,43 +16,45 @@ import {
   POST_STATE_TASKS_API_URL,
 } from "../constants/apiUrl";
 import { TodoState } from "../redux/api/types";
+import ItemLoadingSkeleton from "./ItemLoadingSkeleton";
 
 interface PannelProps {
   title: string;
 }
 const Pannel = ({ title }: PannelProps) => {
-  console.log("Pannel: " + title);
   const authState = useSelector((state: RootState) => state.auth);
-  const getTaskEvent = useSelector((state: RootState) => state.getTasks);
+  const getTaskTodos = useSelector((state: RootState) => state.getTasks);
   const addEvent = useSelector((state: RootState) => state.addTask);
   const modifyEvent = useSelector((state: RootState) => state.modifyTask);
   const deleteEvent = useSelector((state: RootState) => state.deleteTask);
   const filterTodos = useSelector((state: RootState) => state.filterTask);
-  const menu = useSelector((state: RootState) => state.menu.menuName);
+  const menu = localStorage.getItem("menu");
   const dispatch = useDispatch<AppDispatch>();
 
-  const [todos, setTodos] = useState<TodoState[]>(getTaskEvent.data);
+  const [todos, setTodos] = useState<TodoState[]>([]);
+  const [isLoading, setLoading] = useState(true);
 
+  // refreshData();
   useEffect(() => {
     // dispatch(fetchGetTasks(`${GET_TASKS_API_URL}/${authState?.authData?.sub}`));
     refreshData();
-  }, [authState.authData, addEvent, modifyEvent, deleteEvent]);
-
-  // useEffect(() => {
-  //   setTodos(getTaskEvent.data);
-  // }, [getTaskEvent]);
+  }, [addEvent, modifyEvent, deleteEvent]);
 
   useEffect(() => {
+    setLoading(getTaskTodos.loading);
     setTodos(filterTodos.data);
   }, [filterTodos]);
 
   useEffect(() => {
-    setTodos(getTaskEvent.data);
-  }, [getTaskEvent]);
+    setLoading(getTaskTodos.loading);
+    setTodos(getTaskTodos.data);
+  }, [getTaskTodos]);
 
   useEffect(() => {
+    setLoading(true);
+    setTodos([]);
     refreshData();
-  }, [menu]);
+  }, [title]);
 
   function refreshData() {
     const taskData = createData();
@@ -109,6 +111,8 @@ const Pannel = ({ title }: PannelProps) => {
         return null;
     }
   }
+
+  const expectedItemCount = todos.length > 0 ? todos.length : 5;
   return (
     <Box>
       {authState.token ? (
@@ -123,11 +127,27 @@ const Pannel = ({ title }: PannelProps) => {
             </Typography>
           </Box>
           <Grid container padding={"3px"}>
-            {todos.map((todo, idx) => (
+            {isLoading ? (
+              // todos의 길이만큼 스켈레톤을 렌더링하거나 기본값으로 5개를 렌더링
+              <>
+                {[...Array(expectedItemCount)].map((_, idx) => (
+                  <Grid key={idx}>
+                    <ItemLoadingSkeleton />
+                  </Grid>
+                ))}
+              </>
+            ) : (
+              todos.map((todo, idx) => (
+                <Grid key={idx}>
+                  <ItemCard todo={todo} />
+                </Grid>
+              ))
+            )}
+            {/* {todos.map((todo, idx) => (
               <Grid key={idx}>
                 <ItemCard todo={todo} />
               </Grid>
-            ))}
+            ))} */}
             <Grid key="btn">
               <ItemCard todo={null} />
             </Grid>

@@ -8,7 +8,6 @@ import {
   getTasksReducer,
   modifyTaskReducer,
 } from "./slice/apiSlice";
-import { menuReducer } from "./slice/menuSlice";
 
 const store = configureStore({
   reducer: {
@@ -19,7 +18,6 @@ const store = configureStore({
     getTasks: getTasksReducer,
     theme: themeReducer,
     auth: authReducer,
-    menu: menuReducer,
   },
 });
 

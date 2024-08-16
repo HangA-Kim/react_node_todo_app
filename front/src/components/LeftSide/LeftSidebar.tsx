@@ -16,15 +16,18 @@ import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlin
 import NotInterestedRoundedIcon from "@mui/icons-material/NotInterestedRounded";
 import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
 import LogoImg from "../../assets/logo.png";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../redux/store";
-import { setMenu } from "../../redux/slice/menuSlice";
 import { globalColors } from "../../redux/theme/globalColors";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const LeftSidebar = () => {
-  const currentTab = useSelector((state: RootState) => state.menu.menuName);
-  const dispatch = useDispatch<AppDispatch>();
+  const [currentTab, setCurrentTab] = useState(
+    localStorage.getItem("menu") || "ALL"
+  );
+  const handleSetCurrentTab = (menuName: string) => {
+    setCurrentTab(menuName);
+    localStorage.setItem("menu", menuName);
+  };
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -72,28 +75,28 @@ const LeftSidebar = () => {
               name="ALL"
               currentTab={currentTab}
               path="/get_all"
-              setCurrentTab={() => dispatch(setMenu("ALL"))}
+              setCurrentTab={() => handleSetCurrentTab("ALL")}
               Icon={null}
             />
             <Menu
               name="Completed"
               currentTab={currentTab}
               path="/get_completed"
-              setCurrentTab={() => dispatch(setMenu("Completed"))}
+              setCurrentTab={() => handleSetCurrentTab("Completed")}
               Icon={CheckCircleOutlineRoundedIcon}
             />
             <Menu
               name="InCompleted"
               currentTab={currentTab}
               path="/get_incompleted"
-              setCurrentTab={() => dispatch(setMenu("InCompleted"))}
+              setCurrentTab={() => handleSetCurrentTab("InCompleted")}
               Icon={NotInterestedRoundedIcon}
             />
             <Menu
               name="Important"
               currentTab={currentTab}
               path="/get_important"
-              setCurrentTab={() => dispatch(setMenu("Important"))}
+              setCurrentTab={() => handleSetCurrentTab("Important")}
               Icon={ErrorOutlineRoundedIcon}
             />
           </List>
