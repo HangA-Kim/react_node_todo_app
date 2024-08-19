@@ -38,7 +38,7 @@ export const postTaskFromState = async (req: Request, res: Response) => {
     //   [userId, qauryText]
     // );
     const result = await pool.query(
-      `SELECT * FROM task WHERE userId = $1 AND ${queryText} ORDER BY updated_at DESC`,
+      `SELECT * FROM task WHERE userId = $1 AND ${queryText} ORDER BY created_at DESC`,
       [userId]
     );
     return res.status(200).json(result.rows);

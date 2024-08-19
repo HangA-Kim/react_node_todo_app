@@ -8,9 +8,14 @@ import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlin
 import NotInterestedRoundedIcon from "@mui/icons-material/NotInterestedRounded";
 import ErrorOutlineRoundedIcon from "@mui/icons-material/ErrorOutlineRounded";
 import { globalColors } from "../redux/theme/globalColors";
-import { InputTodoProps } from "./InputTodo";
+import { TodoState } from "../redux/api/types";
 
-const ViewTodo = ({ open, handleClickDlg, todo }: InputTodoProps) => {
+interface ViewTodoProps {
+  open: boolean;
+  handleClickDlg(isOpen: boolean): void;
+  todo: TodoState | null;
+}
+const ViewTodo = ({ open, handleClickDlg, todo }: ViewTodoProps) => {
   return (
     <Dialog open={open} onClose={(e) => handleClickDlg(false)} fullWidth>
       <DialogTitle>{todo?.title}</DialogTitle>

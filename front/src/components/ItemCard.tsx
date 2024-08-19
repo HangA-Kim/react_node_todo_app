@@ -10,6 +10,7 @@ import {
   IconButton,
   Divider,
   Chip,
+  Stack,
 } from "@mui/material";
 import { TodoState } from "../redux/api/types";
 import { globalColors } from "../redux/theme/globalColors";
@@ -21,19 +22,10 @@ import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
 import InputTodo from "./InputTodo";
 import AddIcon from "@mui/icons-material/Add";
 import ViewTodo from "./ViewTodo";
-import {
-  fetchDeleteTasks,
-  fetchModifyTask,
-  FetchThunkParams,
-} from "../redux/api/thunks";
-import { DEL_TASK_API_URL, PUT_MODIFY_TASK_API_URL } from "../constants/apiUrl";
-import { deleteTask, putTask } from "../redux/api/axiosApis";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../redux/store";
 
 export const CustomCard = styled(Card)<CardProps>(() => ({
   width: "380px",
-  height: "200px",
+  height: "230px",
   border: "1px solid",
   borderRadius: "5px",
   borderColor: globalColors.grey[200],
@@ -46,8 +38,11 @@ export const CustomCard = styled(Card)<CardProps>(() => ({
 
 interface ItemCardProps {
   todo: TodoState | null;
+  deleteTodo(todo: TodoState): Promise<void>;
+  modifyTask(todo: TodoState, data: string): Promise<void>;
+  addTask(data: string): Promise<void>;
 }
-const ItemCard = ({ todo }: ItemCardProps) => {
+const ItemCard = ({ todo, deleteTodo, modifyTask, addTask }: ItemCardProps) => {
   // console.log(todo);
   const [dlgOpen, setDlgOpen] = React.useState(false);
   const handleClickDlg = (isOpen: boolean) => {
@@ -59,43 +54,27 @@ const ItemCard = ({ todo }: ItemCardProps) => {
     setViewDlgOpen(isOpen);
   };
 
-  const dispatch = useDispatch<AppDispatch>();
-
-  const handleAddTask = () => {
-    const fetchParam: FetchThunkParams = {
-      fetchParams: {
-        url: `${DEL_TASK_API_URL}/${todo?._id}`,
-        data: "",
-      },
-      axiosFunc: deleteTask,
-    };
-    dispatch(fetchDeleteTasks(fetchParam));
-  };
-
   const handleCompletedChange = () => {
     console.log("handleCompletedChange");
-    modifyTodo(JSON.stringify({ isCompleted: !todo?.iscompleted }));
+    if (todo === null) return;
+    modifyTask(todo, JSON.stringify({ isCompleted: !todo?.iscompleted }));
   };
 
   const handleImpotantChange = () => {
     console.log("handleImpotantChange");
-    modifyTodo(JSON.stringify({ isImportant: !todo?.isimportant }));
+    if (todo === null) return;
+    modifyTask(todo, JSON.stringify({ isImportant: !todo?.isimportant }));
   };
-
-  function modifyTodo(data: string) {
-    const fetchParam: FetchThunkParams = {
-      fetchParams: {
-        url: `${PUT_MODIFY_TASK_API_URL}?taskID=${todo?._id}`,
-        data,
-      },
-      axiosFunc: putTask,
-    };
-    dispatch(fetchModifyTask(fetchParam));
-  }
 
   return (
     <div>
-      <InputTodo open={dlgOpen} handleClickDlg={handleClickDlg} todo={todo} />
+      <InputTodo
+        open={dlgOpen}
+        handleClickDlg={handleClickDlg}
+        todo={todo}
+        addTask={addTask}
+        modifyTask={modifyTask}
+      />
       <ViewTodo
         open={viewDlgOpen}
         handleClickDlg={handleViewClickDlg}
@@ -103,41 +82,63 @@ const ItemCard = ({ todo }: ItemCardProps) => {
       />
       {todo ? (
         <CustomCard>
-          <CardContent>
-            <Typography
-              gutterBottom
-              variant="h5"
-              component="div"
-              onClick={(e) => {
-                setViewDlgOpen(true);
-              }}
-            >
-              {todo.title}
-            </Typography>
-            <Divider />
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center", // 세로 가운데 정렬
-                justifyContent: "center",
-                height: "100%", // 부모 컨테이너의 전체 높이 사용
-              }}
+          <CardContent sx={{ height: "100%", padding: 0 }}>
+            <Stack
+              direction="column"
+              justifyContent="space-between"
+              alignItems="center"
+              spacing={1}
+              height={"100%"}
             >
               <Typography
-                variant="body2"
-                color="text.secondary"
-                style={{
-                  whiteSpace: "pre-line",
-                  display: "-webkit-box",
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  WebkitLineClamp: 3,
+                gutterBottom
+                variant="h5"
+                component="div"
+                onClick={(e) => {
+                  setViewDlgOpen(true);
+                }}
+                sx={{
+                  borderBottom: `1px solid ${globalColors.grey[300]}`,
+                  width: "100%",
+                  paddingBottom: "10px",
+                  paddingTop: "10px",
                 }}
               >
-                {todo.description}
+                {todo.title}
               </Typography>
-            </Box>
+              <Box
+                sx={{
+                  margin: 0, // 필요시 margin 제거
+                  padding: 0, // 필요시 padding 제거
+                  alignContent: "center",
+                }}
+              >
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  style={{
+                    whiteSpace: "pre-line",
+                    display: "-webkit-box",
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    WebkitLineClamp: 3,
+                    maxHeight: "3.6em",
+                    lineHeight: 1.2,
+                    margin: 0, // 필요시 margin 제거
+                    padding: 0, // 필요시 padding 제거
+                  }}
+                >
+                  {todo.description}
+                </Typography>
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{ width: "100%", textAlign: "left", paddingLeft: "50px" }}
+              >
+                {todo.date}
+              </Typography>
+            </Stack>
           </CardContent>
           <CardActions
             sx={{
@@ -198,7 +199,7 @@ const ItemCard = ({ todo }: ItemCardProps) => {
                 color="error"
                 size="small"
                 sx={{ border: 1 }}
-                onClick={(e) => handleAddTask()}
+                onClick={(e) => deleteTodo(todo)}
               >
                 <ClearRoundedIcon />
               </IconButton>

@@ -11,7 +11,7 @@ export const getTasks = async (req: Request, res: Response) => {
 
   try {
     const result = await pool.query(
-      "SELECT * FROM task WHERE userId = $1 ORDER BY updated_at DESC",
+      "SELECT * FROM task WHERE userId = $1 ORDER BY created_at DESC",
       [userId]
     ); // $1 : 첫번째 파라미터의 값, $2 : 두번째 파라미터의 값
     // "SELECT * FROM task WHERE userId = $1 AND status = $2 AND createdAt = $3",
